@@ -9,7 +9,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = $_POST['pass']; // Sesuaikan dengan nama input password
 
     // Query untuk mendapatkan hash password pengguna berdasarkan username
-    $query = "SELECT id, level, password FROM User WHERE username = '$username'";
+    $query = "SELECT id, level, username, password FROM user WHERE username = '$username'"; // Tambahkan 'username' ke query
     $result = $conn->query($query);
 
     if ($result->num_rows == 1) {
@@ -20,6 +20,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if (password_verify($password, $hashed_password)) {
             $_SESSION['user_id'] = $row['id'];
             $_SESSION['user_level'] = $row['level'];
+            $_SESSION['username'] = $row['username']; // Tambahkan 'username' ke sesi
 
             // Redirect sesuai dengan level pengguna
             if ($_SESSION['user_level'] == 'admin') {
