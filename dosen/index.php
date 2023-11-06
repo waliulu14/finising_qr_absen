@@ -58,6 +58,9 @@
                                     <a href='lihat_mahasiswa.php?matkul_id=$idMatkul' class='btn btn-info btn-sm'>
                                         <i class='far fa-eye'></i>
                                     </a>
+                                    <a href='generate_qr_code.php?matkul_id=$idMatkul' class='btn btn-primary btn-sm'>
+                                        <i class='fas fa-qrcode'></i>
+                                    </a>
                                 </td>";
                                 echo "</tr>";
                             }
