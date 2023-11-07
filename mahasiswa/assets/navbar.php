@@ -1,3 +1,32 @@
+<?php
+session_start();
+
+// Check if the user is not logged in
+if (!isset($_SESSION['username'])) {
+    // Redirect to the login page
+    header('Location: ../login.php');
+    exit(); // Stop script execution
+}
+
+include_once '../include/config.php';
+
+$username = $_SESSION['username']; // Mengambil nama pengguna dari sesi
+
+// Query untuk mendapatkan ID mahasiswa berdasarkan nama pengguna (username)
+$query = "SELECT id FROM mahasiswa WHERE id_user = (SELECT id FROM user WHERE username = '$username')";
+$result = mysqli_query($conn, $query);
+
+if ($result && mysqli_num_rows($result) == 1) {
+    $row = mysqli_fetch_assoc($result);
+    $idMahasiswa = $row['id'];
+} else {
+    // Handle jika data mahasiswa tidak ditemukan
+    header('Location: ../login.php');
+    exit();
+}
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -53,42 +82,11 @@
                     <span>Dashboard</span></a>
             </li>
 
-            <!-- Divider -->
-            <hr class="sidebar-divider">
+       
 
-            <!-- Heading -->
-            <div class="sidebar-heading">
-                Menu
-            </div>
-            <li class="nav-item">
-                <a class="nav-link" href="mahasiswa.php">
-                    <i class="fas fa-fw fa-shopping-cart"></i> 
-                    <span>Tambah Mahasiswa</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="dosen.php">
-                    <i class="fas fa-fw fa-shopping-cart"></i> 
-                    <span>Tambah Dosen</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="matakuliah.php">
-                    <i class="fas fa-fw fa-shopping-cart"></i> 
-                    <span>Tambah Matakuliah</span>
-                </a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link" href="krs.php">
-                    <i class="fas fa-fw fa-shopping-cart"></i> 
-                    <span>Tambha KRS</span>
-                </a>
-            </li>
+          
         
-            <!-- Divider -->
-            <hr class="sidebar-divider d-none d-md-block">
-
+       
             <!-- Sidebar Toggler (Sidebar) -->
             <div class="text-center d-none d-md-inline">
                 <button class="rounded-circle border-0" id="sidebarToggle"></button>
@@ -145,7 +143,9 @@
                         <!-- Nav Item - User Information -->
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <!-- <span class="mr-2 d-none d-lg-inline text-gray-600 small"><?php echo $namaPengguna; ?></span> -->
+                            <!-- <span class="mr-2 d-none d-lg-inline text-gray-600 small"><?php echo $username; ?></span> -->
+                            <span class="mr-2 d-none d-lg-inline text-gray-600 small"><?php echo $username; ?></span>
+
 
                                 <img class="img-profile rounded-circle" src="img/undraw_profile.svg">
                             </a>
