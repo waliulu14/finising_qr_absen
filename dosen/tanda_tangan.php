@@ -13,33 +13,38 @@ if (isset($_GET['matkul_id'])) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Handle form submission
-    $tandaTangan = $_POST['tanda_tangan'];
+    // Periksa apakah "tanda_tangan" ada dalam array POST
+    if (isset($_POST['tanda_tangan'])) {
+        $tandaTangan = $_POST['tanda_tangan'];
 
-    // Validasi tanda tangan (pastikan tidak kosong)
-    if (empty($tandaTangan)) {
-        $error = 'Tanda tangan harus diisi.';
-    } else {
-        // Simpan tanda tangan ke database (contoh: tabel "tanda_tangan_dosen")
-        $queryInsertTandaTangan = "INSERT INTO tanda_tangan_dosen (id_dosen, id_matkul, tgl_tanda_tangan, tanda_tangan) 
-                                  VALUES (1, $matkulId, NOW(), ?)";
-
-        $stmt = $conn->prepare($queryInsertTandaTangan);
-        $stmt->bind_param("s", $tandaTangan);
-        
-        if ($stmt->execute()) {
-            // Tanda tangan berhasil disimpan. Anda dapat melakukan operasi tambahan jika diperlukan.
-
-            // Setelah berhasil menyimpan tanda tangan atau melakukan tindakan yang sesuai, 
-            // Anda dapat mengarahkan pengguna ke halaman lain.
-            // Contoh pengalihan:
-            header('Location: halaman_lain.php');
-            exit;
+        // Validasi tanda tangan (pastikan tidak kosong)
+        if (empty($tandaTangan)) {
+            $error = 'Tanda tangan harus diisi.';
         } else {
-            $error = 'Gagal menyimpan tanda tangan.';
+            // Simpan tanda tangan ke database (contoh: tabel "tanda_tangan_dosen")
+            $queryInsertTandaTangan = "INSERT INTO tanda_tangan_dosen (id_dosen, id_matkul, tgl_tanda_tangan, tanda_tangan) 
+                                      VALUES (1, $matkulId, NOW(), ?)";
+
+            $stmt = $conn->prepare($queryInsertTandaTangan);
+            $stmt->bind_param("s", $tandaTangan);
+
+            if ($stmt->execute()) {
+                // Tanda tangan berhasil disimpan. Anda dapat melakukan operasi tambahan jika diperlukan.
+
+                // Setelah berhasil menyimpan tanda tangan atau melakukan tindakan yang sesuai, 
+                // Anda dapat mengarahkan pengguna ke halaman lain.
+                // Contoh pengalihan:
+                header('Location: halaman_lain.php');
+                exit;
+            } else {
+                $error = 'Gagal menyimpan tanda tangan.';
+            }
         }
+    } else {
+        $error = 'Tanda tangan tidak ditemukan dalam permintaan POST.';
     }
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -68,11 +73,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endif; ?>
 
         <form method="post">
-            <div class="form-group">
-                <label for="tanda_tangan">Tanda Tangan Dosen:</label>
-                <!-- Menambahkan HTML5 canvas untuk tanda tangan -->
-                <canvas id="signatureCanvas" width="500" height="200"></canvas>
-            </div>
+        <div class="form-group">
+    <label for="tanda_tangan">Tanda Tangan Dosen:</label>
+    <!-- Menambahkan HTML5 canvas untuk tanda tangan -->
+    <canvas id="signatureCanvas" name="tanda_tangan" width="500" height="200"></canvas>
+</div>
+
             <button type="submit" class="btn btn-primary">Tandatangani</button>
         </form>
     </div>
@@ -100,3 +106,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </script>
 </body>
 </html>
+<?php include 'assets/footer.php'; ?>
