@@ -50,7 +50,6 @@ require '../phpqrcode-master/qrlib.php';
                         echo '<h1>Generate QR Code</h1>';
                         echo "<p>Scan QR Code ini untuk melakukan absensi di mata kuliah <b>$namaMatkul</b></p>";
                         echo '<img src="' . $qrCodeImage . '" alt="QR Code" class="img-fluid">';
-                        
                     } else {
                         echo 'Data mata kuliah tidak ditemukan.';
                     }
@@ -58,6 +57,8 @@ require '../phpqrcode-master/qrlib.php';
                     echo 'ID mata kuliah tidak valid.';
                 }
                 ?>
+                <!-- Button to stop generating QR Code and go to tanda_tangan.php -->
+                <a href="tanda_tangan.php?matkul_id=<?php echo $matkulId; ?>" class="btn btn-primary">Stop Generate QR Code</a>
             </div>
 
             <div class="col-md-6">
@@ -88,6 +89,8 @@ require '../phpqrcode-master/qrlib.php';
                     echo '</table>';
                 }
                 ?>
+
+                
             </div>
         </div>
     </div>
