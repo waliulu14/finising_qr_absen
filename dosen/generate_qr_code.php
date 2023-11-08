@@ -1,20 +1,18 @@
 <?php
-require_once 'assets/navbar.php'; // Sesuaikan dengan lokasi file navbar Anda
+// Include the necessary PHP files and initialize the database connection
 require_once '../include/config.php';
-require_once '../vendor/autoload.php';
+include 'assets/navbar.php';
+require '../phpqrcode-master/qrlib.php';
 
-use Endroid\QrCode\QrCode;
-
-// Ambil matkul_id dari parameter GET
+// Ambil id matkul dari parameter GET
 if (isset($_GET['matkul_id'])) {
-    $matkul_id = $_GET['matkul_id'];
+    $matkulId = $_GET['matkul_id'];
 
-    // Query untuk mendapatkan detail mata kuliah berdasarkan matkul_id
-    $queryMatkul = "SELECT M.kode_matkul, M.nama_matkul, D.nama_dosen
+    // Query untuk mendapatkan informasi matkul
+    $queryMatkul = "SELECT M.id, M.kode_matkul, M.nama_matkul, D.nama_dosen
                     FROM matkul M
                     INNER JOIN dosen D ON M.id_dosen = D.id
-                    WHERE M.id = $matkul_id";
-
+                    WHERE M.id = $matkulId";
     $resultMatkul = $conn->query($queryMatkul);
 
     if ($resultMatkul->num_rows > 0) {
@@ -22,60 +20,42 @@ if (isset($_GET['matkul_id'])) {
         $kodeMatkul = $rowMatkul['kode_matkul'];
         $namaMatkul = $rowMatkul['nama_matkul'];
         $dosenPengajar = $rowMatkul['nama_dosen'];
+
+        // Query untuk mendapatkan nama-nama mahasiswa yang mengikuti mata kuliah ini
+        $queryMahasiswa = "SELECT M.nama_mahasiswa
+                           FROM krs K
+                           INNER JOIN mahasiswa M ON K.id_mahasiswa = M.id
+                           WHERE K.id_matkul = $matkulId";
+        $resultMahasiswa = $conn->query($queryMahasiswa);
+
+        $namaMahasiswaList = array();
+        while ($rowMahasiswa = $resultMahasiswa->fetch_assoc()) {
+            $namaMahasiswaList[] = $rowMahasiswa['nama_mahasiswa'];
+        }
+
+        // Generate QR code content
+        $qrCodeContent = "Mata Kuliah: $kodeMatkul\nNama Mata Kuliah: $namaMatkul\nDosen Pengajar: $dosenPengajar\nMahasiswa: " . implode(", ", $namaMahasiswaList);
+
+        // Generate QR code image
+        $qrCodeImage = 'qr_codes/' . $matkulId . '.png';
+        QRcode::png($qrCodeContent, $qrCodeImage);
+
+        // Tampilkan QR code
+        echo '<div class="container">';
+        echo '<h1>Generate QR Code</h1>';
+        echo "<p>Scan QR Code ini untuk melakukan absensi di mata kuliah $kodeMatkul</p>";
+        echo '<p>Mahasiswa yang mengikuti: ' . implode(", ", $namaMahasiswaList) . '</p>';
+        echo '<img src="' . $qrCodeImage . '" alt="QR Code">';
+        echo '</div>';
     } else {
-        echo "Mata kuliah tidak ditemukan.";
-        exit();
+        echo 'Data mata kuliah tidak ditemukan.';
     }
 } else {
-    echo "Parameter matkul_id tidak valid.";
-    exit();
+    echo 'ID mata kuliah tidak valid.';
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $tanggal = $_POST['tanggal'];
-    $waktu = $_POST['waktu'];
-    $lokasi = $_POST['lokasi'];
+// Tutup koneksi database
+$conn->close();
 
-    // Buat informasi pertemuan
-    $informasiPertemuan = "Mata Kuliah: $kodeMatkul - $namaMatkul\nDosen Pengajar: $dosenPengajar\nTanggal: $tanggal\nWaktu: $waktu\nLokasi: $lokasi";
-
-    // Generate QR Code
-    $qrCode = new QrCode($informasiPertemuan);
-
-    // Simpan QR Code ke dalam database bersama dengan informasi pertemuan
-    $querySimpanQRCode = "INSERT INTO qr_code (id_dosen, id_matkul, tgl_pencetakan, qr_code) VALUES ('$idDosen', '$matkul_id', '$tanggal', '" . $qrCode->writeDataUri() . "')";
-    if ($conn->query($querySimpanQRCode) === TRUE) {
-        // Tampilkan QR Code kepada dosen
-        echo '<img src="' . $qrCode->writeDataUri() . '" />';
-        echo "<br>QR Code telah berhasil dicetak.";
-    } else {
-        echo "Gagal menyimpan QR Code.";
-    }
-}
+include 'assets/footer.php';
 ?>
-
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Generate QR Code Absensi</title>
-</head>
-<body>
-    <h1>Generate QR Code Absensi untuk Mata Kuliah: <?php echo $kodeMatkul; ?> - <?php echo $namaMatkul; ?></h1>
-
-    <form method="post">
-        <label for="tanggal">Tanggal:</label>
-        <input type="date" name="tanggal" required><br>
-
-        <label for "waktu">Waktu:</label>
-        <input type="time" name="waktu" required><br>
-
-        <label for="lokasi">Lokasi:</label>
-        <input type="text" name="lokasi" required><br>
-
-        <input type="submit" value="Generate QR Code">
-    </form>
-
-    <!-- Tambahkan tautan atau tombol untuk kembali ke halaman sebelumnya atau riwayat pertemuan kelas -->
-
-</body>
-</html>
