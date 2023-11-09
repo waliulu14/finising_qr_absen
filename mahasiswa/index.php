@@ -54,13 +54,13 @@
                                 echo "<td>" . $jamMulai . "</td>";
                                 echo "<td>" . $jamSelesai . "</td>";
                                 echo "<td>
-                                <a href='detail_absensi.php?matkul_id=' class='btn btn-info btn-sm'>
-                                    <i class='far fa-eye'></i>
-                                </a>
-                                <a href='ambil_absnesi_qr' class='btn btn-primary btn-sm'>
-                                    <i class='fas fa-qrcode'></i>
-                                </a>
-                            </td>";
+        <a href='detail_absensi.php?matkul_id=$kodeMatkul' class='btn btn-info btn-sm'>
+            <i class='far fa-eye'></i>
+        </a>
+        <a href='ambil_absensi_qr.php?matkul_id=$kodeMatkul' class='btn btn-primary btn-sm'>
+            <i class='fas fa-qrcode'></i>
+        </a>
+    </td>";
                             }
                         } else {
                             echo "<tr><td colspan='8'>Anda belum mengambil mata kuliah.</td></tr>";
@@ -77,5 +77,3 @@
 </div>
 
 <?php include 'assets/footer.php'; ?>
-
-

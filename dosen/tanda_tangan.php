@@ -31,10 +31,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($stmt->execute()) {
                 // Tanda tangan berhasil disimpan. Anda dapat melakukan operasi tambahan jika diperlukan.
 
-                // Setelah berhasil menyimpan tanda tangan atau melakukan tindakan yang sesuai, 
-                // Anda dapat mengarahkan pengguna ke halaman lain.
-                // Contoh pengalihan:
-                header('Location: halaman_lain.php');
+                // Setelah berhasil menyimpan tanda tangan, arahkan pengguna ke halaman "simpan_tanda_tangan.php"
+                header('Location: simpan_tanda_tangan.php');
                 exit;
             } else {
                 $error = 'Gagal menyimpan tanda tangan.';
@@ -44,7 +42,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Tanda tangan tidak ditemukan dalam permintaan POST.';
     }
 }
-
 ?>
 
 <!DOCTYPE html>
@@ -73,12 +70,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endif; ?>
 
         <form method="post">
-        <div class="form-group">
-    <label for="tanda_tangan">Tanda Tangan Dosen:</label>
-    <!-- Menambahkan HTML5 canvas untuk tanda tangan -->
-    <canvas id="signatureCanvas" name="tanda_tangan" width="500" height="200"></canvas>
-</div>
-
+            <div class="form-group">
+                <label for="tanda_tangan">Tanda Tangan Dosen:</label>
+                <!-- Menambahkan HTML5 canvas untuk tanda tangan -->
+                <canvas id="signatureCanvas" name="tanda_tangan" width="500" height="200"></canvas>
+            </div>
             <button type="submit" class="btn btn-primary">Tandatangani</button>
         </form>
     </div>
