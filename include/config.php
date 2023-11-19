@@ -2,7 +2,7 @@
  $host = "localhost"; 
  $username = "root"; 
  $password = ""; 
- $database = "qr-absensi"; 
+ $database = "qr_finish"; 
  
  $conn = new mysqli($host, $username, $password, $database);
  
