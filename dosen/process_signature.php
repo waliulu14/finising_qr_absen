@@ -18,22 +18,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Decode the data URL to get the actual signature image
     $decodedSignature = base64_decode(str_replace('data:image/png;base64,', '', $signatureData));
 
-    // Insert the signature into the tanda_tangan_mahasiswa table
-    $insertSignatureQuery = "INSERT INTO tanda_tangan_mahasiswa (id_mahasiswa, id_matkul, tgl_tanda_tangan, tanda_tangan) VALUES (?, ?, CURDATE(), ?)";
+    // Insert the signature into the tanda_tangan_dosen table
+    $insertSignatureQuery = "INSERT INTO tanda_tangan_dosen (id_dosen, id_matkul, tgl_tanda_tangan, tanda_tangan) VALUES (1, ?, CURDATE(), ?)";
     $stmt = $conn->prepare($insertSignatureQuery);
-
-    // Assuming you have a session variable for student ID
-    $id_mahasiswa = $_SESSION['id_mahasiswa'];
-    $stmt->bind_param('iis', $id_mahasiswa, $matkul_id, $decodedSignature);
-
+    $stmt->bind_param('is', $matkul_id, $decodedSignature);
     $stmt->execute();
     $stmt->close();
 
     // Query to get course information and count of students present
-    $attendanceQuery = "SELECT M.nama_matkul, COUNT(DISTINCT TTM.id_mahasiswa) AS jumlah_absensi
+    $attendanceQuery = "SELECT M.nama_matkul, COUNT(DISTINCT AM.id_mahasiswa) AS jumlah_absensi
                         FROM matkul M
-                        LEFT JOIN tanda_tangan_mahasiswa TTM ON M.id = TTM.id_matkul
-                        WHERE M.id = ? AND TTM.tgl_tanda_tangan = CURDATE()";
+                        LEFT JOIN absensi_mahasiswa AM ON M.id = AM.id_matkul
+                        WHERE M.id = ? AND AM.tanggal = CURDATE() AND AM.hadir = TRUE";
     $stmtAttendance = $conn->prepare($attendanceQuery);
     $stmtAttendance->bind_param('i', $matkul_id);
     $stmtAttendance->execute();
@@ -55,35 +51,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <h1>Signature Processed Successfully</h1>
             <p>Course: $nama_matkul</p>
            
-            <h2>Your Attendance Today</h2>
+
+            <h2>Students Present Today</h2>
             <table class='table'>
                 
                 <tbody>";
 
-    // Query to get the attendance status of the current student
-    $queryStudentAttendance = "SELECT COUNT(id) AS attendance_count FROM tanda_tangan_mahasiswa WHERE id_mahasiswa = ? AND id_matkul = ? AND tgl_tanda_tangan = CURDATE()";
-    $stmtStudentAttendance = $conn->prepare($queryStudentAttendance);
-    $stmtStudentAttendance->bind_param('ii', $id_mahasiswa, $matkul_id);
-    $stmtStudentAttendance->execute();
-    $stmtStudentAttendance->bind_result($attendance_count);
-    $stmtStudentAttendance->fetch();
-    $stmtStudentAttendance->close();
+    // Query to get the names and attendance status of students from history_absensi_mahasiswa
+    $queryStudents = "SELECT M.nama_mahasiswa, MAX(HAM.tanggal) AS last_attendance_date, COUNT(HAM.id_mahasiswa) AS attendance_count
+FROM mahasiswa M
+LEFT JOIN history_absensi_mahasiswa HAM ON M.id = HAM.id_mahasiswa AND HAM.tanggal = CURDATE()
+WHERE HAM.id_matkul = ?
+GROUP BY M.nama_mahasiswa";
 
-    // Determine attendance status
-    $status = ($attendance_count > 0) ? 'Present' : 'Absent';
+    $stmtStudents = $conn->prepare($queryStudents);
+    $stmtStudents->bind_param('i', $matkul_id);
+    $stmtStudents->execute();
+    $stmtStudents->bind_result($nama_mahasiswa, $last_attendance_date, $attendance_count);
 
-    // Display student name, status, and attendance count in the table
-    echo "<tr>
-<td>Your Name</td>
+    echo "
+<tr>
+<th>Name</th>
+<th>Status</th>
+<th>Attendance Count</th>
+</tr>";
+
+    while ($stmtStudents->fetch()) {
+        // Determine attendance status
+        $status = ($last_attendance_date !== null) ? 'Present' : 'Absent';
+
+        // Display student name, status, and attendance count in the table
+        echo "<tr>
+<td>$nama_mahasiswa</td>
 <td>$status</td>
 <td>$attendance_count</td>
 </tr>";
+    }
+
+    $stmtStudents->close();
+
+
+
 
     // Complete the HTML structure
     echo "
                 </tbody>
             </table>
-            <p>Your digital signature has been stored in the database.</p>
+            <p>The digital signature has been stored in the database.</p>
         </div>
     </body>
     </html>";
@@ -92,4 +106,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 } else {
     echo "Invalid Request.";
 }
-?>
