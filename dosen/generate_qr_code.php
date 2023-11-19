@@ -264,6 +264,13 @@ ob_end_flush();
         border-collapse: collapse;
     }
 
+       /* Add this media query for smaller screens */
+       @media (max-width: 768px) {
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+    }
     table,
     th,
     td {
