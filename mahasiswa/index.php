@@ -1,4 +1,8 @@
-<?php include 'assets/navbar.php'; ?>
+<?php
+// Include necessary configurations and header
+require_once '../include/config.php';
+include 'assets/navbar.php';
+?>
 
 <div class="container-fluid">
     <!-- Page Heading -->
@@ -24,7 +28,7 @@
                     <tbody>
                         <?php
                         // Query untuk mengambil mata kuliah yang diambil oleh mahasiswa
-                        $queryMatkul = "SELECT M.kode_matkul, M.nama_matkul, M.kelas, M.hari, M.jam_mulai, M.jam_selesai, D.nama_dosen
+                        $queryMatkul = "SELECT M.id, M.kode_matkul, M.nama_matkul, M.kelas, M.hari, M.jam_mulai, M.jam_selesai, D.nama_dosen
                             FROM matkul M
                             INNER JOIN krs K ON M.id = K.id_matkul
                             INNER JOIN mahasiswa Mah ON K.id_mahasiswa = Mah.id
@@ -36,6 +40,7 @@
                         if ($resultMatkul->num_rows > 0) {
                             $no = 1;
                             while ($rowMatkul = $resultMatkul->fetch_assoc()) {
+                                $idMatkul = $rowMatkul["id"];
                                 $kodeMatkul = $rowMatkul["kode_matkul"];
                                 $namaMatkul = $rowMatkul["nama_matkul"];
                                 $dosenPengajar = $rowMatkul["nama_dosen"];
@@ -54,13 +59,13 @@
                                 echo "<td>" . $jamMulai . "</td>";
                                 echo "<td>" . $jamSelesai . "</td>";
                                 echo "<td>
-        <a href='detail_absensi.php?matkul_id=$kodeMatkul' class='btn btn-info btn-sm'>
-            <i class='far fa-eye'></i>
-        </a>
-        <a href='ambil_absensi_qr.php?matkul_id=$kodeMatkul' class='btn btn-primary btn-sm'>
-            <i class='fas fa-qrcode'></i>
-        </a>
-    </td>";
+                                    <a href='detail_absensi.php?matkul_id=$idMatkul' class='btn btn-info btn-sm'>
+                                        <i class='far fa-eye'></i>
+                                    </a>
+                                    <a href='mahasiswa_absensi.php?matkul_id=$idMatkul' class='btn btn-primary btn-sm'>
+                                        <i class='fas fa-qrcode'></i>
+                                    </a>
+                                </td>";
                             }
                         } else {
                             echo "<tr><td colspan='8'>Anda belum mengambil mata kuliah.</td></tr>";

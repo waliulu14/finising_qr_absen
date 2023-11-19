@@ -10,21 +10,31 @@ if (!isset($_SESSION['username'])) {
 
 include_once '../include/config.php';
 
-$username = $_SESSION['username']; // Mengambil nama pengguna dari sesi
+$username = $_SESSION['username']; // Get the username from the session
 
-// Query untuk mendapatkan ID mahasiswa berdasarkan nama pengguna (username)
+// Query to get the mahasiswa_id based on the username
 $query = "SELECT id FROM mahasiswa WHERE id_user = (SELECT id FROM user WHERE username = '$username')";
 $result = mysqli_query($conn, $query);
 
 if ($result && mysqli_num_rows($result) == 1) {
     $row = mysqli_fetch_assoc($result);
     $idMahasiswa = $row['id'];
+
+    // Get the name of the logged-in student
+    $queryStudentName = "SELECT nama_mahasiswa FROM mahasiswa WHERE id = $idMahasiswa";
+    $resultStudentName = mysqli_query($conn, $queryStudentName);
+
+    if ($resultStudentName && mysqli_num_rows($resultStudentName) == 1) {
+        $rowStudentName = mysqli_fetch_assoc($resultStudentName);
+        $_SESSION['nama_mahasiswa'] = $rowStudentName['nama_mahasiswa'];
+    }
 } else {
-    // Handle jika data mahasiswa tidak ditemukan
+    // Handle if data mahasiswa not found
     header('Location: ../login.php');
     exit();
 }
 ?>
+
 
 
 <!DOCTYPE html>
@@ -81,11 +91,6 @@ if ($result && mysqli_num_rows($result) == 1) {
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>Dashboard</span></a>
             </li>
-
-       
-
-          
-        
        
             <!-- Sidebar Toggler (Sidebar) -->
             <div class="text-center d-none d-md-inline">
